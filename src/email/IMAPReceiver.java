@@ -6,10 +6,28 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 //IMAP를 통한 이메일 수신
 public class IMAPReceiver {
-
-    public static void fetchEmails(String imapServer, int port, String username, String password) throws IOException {
+	
+	private static List<String> splitEmails(String fullMessage) {
+		List<String> emailStrList = new LinkedList<String>();
+		
+		Pattern pattern = Pattern.compile("\\(BODY\\[] \\{\\d+\\}(.*?)\\)", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(fullMessage);
+        
+        while (matcher.find()) {
+            String emailStr = matcher.group(1).trim();
+            emailStrList.add(emailStr);
+        }
+		
+		return emailStrList;
+	}
+	
+    public static List<Email> fetchEmails(String imapServer, int port, String username, String password) throws IOException {
         // IMAP 서버에 연결 설정
         Socket socket = new Socket(imapServer, port);
         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -34,9 +52,18 @@ public class IMAPReceiver {
 
         // 서버로부터 메일 제목을 읽고 출력
         String response;
+        StringBuilder sb = new StringBuilder(3000);
         while ((response = reader.readLine()) != null) {
             if (response.equals("a003 OK FETCH completed")) break;
-            System.out.println(response);
+            sb.append(response);
+            sb.append("\r\n");
+        }
+        String fullMessage = sb.toString();
+        List<Email> emailList = new LinkedList<>();
+        List<String> emailStrList = splitEmails(fullMessage);
+        for(String emailStr : emailStrList) {
+        	 Email email = new Email(emailStr);
+             emailList.add(email);
         }
 
         // 로그아웃
@@ -48,6 +75,8 @@ public class IMAPReceiver {
         writer.close();
         reader.close();
         socket.close();
+        
+        return emailList;
     }
     public static void fetchEmailDetail(String imapServer, int port, String username, String password) throws IOException { 
     	

@@ -71,6 +71,7 @@ public class LoginPanel extends EmailClientPanel {
         username += "@yeop.site";
         frame.setUserId(username);
         frame.setUserPassword(password);
-        frame.changePanel(frame.mailEditPanel);
+        frame.mailListPanel.init();
+        frame.changePanel(frame.mailListPanel);
     }
 }

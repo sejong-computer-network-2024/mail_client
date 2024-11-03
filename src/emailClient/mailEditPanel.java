@@ -3,7 +3,9 @@ package emailClient;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -23,7 +25,7 @@ public class mailEditPanel extends EmailClientPanel {
     private JTextField subjectField;
     private JTextArea messageArea;
     private JButton sendButton;
-    
+    private JButton backToListBtn;
 	
 	 public mailEditPanel() {
 	        setLayout(new BorderLayout());
@@ -71,10 +73,11 @@ public class mailEditPanel extends EmailClientPanel {
 
 	        // 하단 패널: 전송 버튼
 	        JPanel bottomPanel = new JPanel();
+	        bottomPanel.setLayout(new GridLayout());
+	        
 	        sendButton = new JButton("Send");
 	        bottomPanel.add(sendButton);
 	        add(bottomPanel, BorderLayout.SOUTH);
-
 	        // 전송 버튼 이벤트 처리
 	        sendButton.addActionListener(new ActionListener() {
 	            @Override
@@ -86,8 +89,23 @@ public class mailEditPanel extends EmailClientPanel {
 						System.out.println("Email sent successfully.");
 					} catch (IOException e1) {
 						e1.printStackTrace();
+					} finally {
+						frame.changePanel(frame.mailListPanel);
 					}
 	            }
 	        });
+	        
+	        backToListBtn = new JButton("메일 목록");
+	        bottomPanel.add(backToListBtn);
+	        backToListBtn.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					EmailClientFrame frame = EmailClientFrame.getEmailClientFrame();
+					frame.mailListPanel.init();
+					frame.changePanel(frame.mailListPanel);
+				}
+			});
+	        
 	    }
 }

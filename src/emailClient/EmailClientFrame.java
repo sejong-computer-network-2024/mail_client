@@ -11,6 +11,7 @@ public class EmailClientFrame extends JFrame{
 	
 	public final static String SERVER = "mail.yeop.site";
 	public final static int SMTP_PORT = 25;
+	public final static int IMAP_PORT = 143;
 	
 	private String userId;
 	private String userPassword;
@@ -47,10 +48,6 @@ public class EmailClientFrame extends JFrame{
 		revalidate();
 		repaint();
 	}
-	
-	
-	
-	
 	
 	
 	
