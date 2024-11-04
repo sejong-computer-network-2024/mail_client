@@ -19,7 +19,7 @@ import javax.swing.JTextField;
 
 import email.SMTPSender;
 
-public class mailEditPanel extends EmailClientPanel {
+public class MailEditPanel extends EmailClientPanel {
 	private JTextField toField;
     private JTextField ccField;
     private JTextField subjectField;
@@ -27,7 +27,7 @@ public class mailEditPanel extends EmailClientPanel {
     private JButton sendButton;
     private JButton backToListBtn;
 	
-	 public mailEditPanel() {
+	 public MailEditPanel() {
 	        setLayout(new BorderLayout());
 
 	        // 상단 패널: 수신자, 참조, 제목 입력

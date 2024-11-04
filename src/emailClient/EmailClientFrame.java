@@ -18,8 +18,9 @@ public class EmailClientFrame extends JFrame{
 	
 	private EmailClientPanel currentPanel = null;
 	public EmailClientPanel loginPanel = new LoginPanel();
-	public EmailClientPanel mailEditPanel = new mailEditPanel();
-	public EmailClientPanel mailListPanel = new mailListPanel();
+	public EmailClientPanel mailEditPanel = new MailEditPanel();
+	public EmailClientPanel mailListPanel = new MailListPanel();
+	public EmailClientPanel mailDetailPanel = new MailDetailPanel();
 
 
 	public static EmailClientFrame getEmailClientFrame() {

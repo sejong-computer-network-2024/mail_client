@@ -1,53 +1,85 @@
 package email;
 
-import java.util.Calendar;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Email implements Comparable<Email>{
-	private int order;
+public class Email implements Comparable<Email> {
+	private int no;
 	private String subject;
 	private String from;
 	private String to;
 	private String cc;
-	private String date;
+	private Date date;
 	private String contentType;
 	private String body;
-	
+
 	Email(String receivedIMAP) {
 		parseRecievedIMAP(receivedIMAP);
 	}
-	
+
 	private void parseRecievedIMAP(String receivedIMAP) {
-//		order = 
+		System.out.println("원문 : " + receivedIMAP);
+
+		no = parseNo(receivedIMAP);
+
 		from = parseField(receivedIMAP, "From");
-        to = parseField(receivedIMAP, "To");
-        subject = parseField(receivedIMAP, "Subject");
-        date = parseField(receivedIMAP, "Date");
-        contentType = parseField(receivedIMAP, "Content-Type");
+		to = parseField(receivedIMAP, "To");
+		subject = parseField(receivedIMAP, "Subject");
+		String dateStr = parseField(receivedIMAP, "Date");
+		date = parseDate(dateStr);
+		contentType = parseField(receivedIMAP, "Content-Type");
 
-        body = parseBody(receivedIMAP);
+		body = parseBody(receivedIMAP);
+	}
 
-        System.out.println("From: " + from);
-        System.out.println("To: " + to);
-        System.out.println("Cc: " + cc);
-        System.out.println("Subject: " + subject);
-        System.out.println("Date: " + date);
-        System.out.println("Content-Type: " + contentType);
-        System.out.println("Body: " + body);
+	private static int parseNo(String receivedIMAP) {
+		Pattern pattern = Pattern.compile("^\\* (\\d+) FETCH");
+		Matcher matcher = pattern.matcher(receivedIMAP);
+		int no = 0;
+		System.out.println(receivedIMAP);
+		// 숫자 추출
+		if (matcher.find()) {
+			no = Integer.parseInt(matcher.group(1)); // 캡처된 숫자
+
+		} else {
+			System.out.println("FETCH 앞의 숫자를 찾을 수 없습니다.");
+		}
+		return no;
+	}
+
+	private static String parseField(String receivedIMAP, String fieldName) {
+		Pattern pattern = Pattern.compile(fieldName + ":\\s*(.*)");
+		Matcher matcher = pattern.matcher(receivedIMAP);
+		return matcher.find() ? matcher.group(1).trim() : "";
+	}
+
+	private static String parseBody(String receivedIMAP) {
+		Pattern pattern = Pattern.compile("(?s)\n\n(.*)(?=\\)\n?$)");
+		Matcher matcher = pattern.matcher(receivedIMAP);
+
+		if (matcher.find()) {
+			return matcher.group(1).trim();
+		}
+		return "";
 	}
 	
-    public static String parseField(String receivedIMAP, String fieldName) {
-        Pattern pattern = Pattern.compile(fieldName + ":\\s*(.*)");
-        Matcher matcher = pattern.matcher(receivedIMAP);
-        return matcher.find() ? matcher.group(1).trim() : "";
-    }
-
-    public static String parseBody(String receivedIMAP) {
-        String[] parts = receivedIMAP.split("\r?\n\r?\n", 2); // split at the first blank line
+	private static Date parseDate(String dateString) {
+        // 패턴에 요일 (EEE), 월 (MMM), 일 (dd), 시간 (HH:mm:ss), 시간대 (z), 연도 (yyyy) 포함
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
         
-        return parts.length > 1 ? parts[1].trim() : "";
+        try {
+            return formatter.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
+	
+	
 
 	public String getSubject() {
 		return subject;
@@ -61,32 +93,35 @@ public class Email implements Comparable<Email>{
 		return to;
 	}
 
-	public String getDate() {
+	public Date getDate() {
 		return date;
 	}
 
 	public String getBody() {
 		return body;
 	}
-    
-    @Override
-    public String toString() {
-    	return "{"
-    			+ "order = " + order
-    			+ "\nfrom = " + from
-    			+ "\nto = "  + to
-    			+ "\nsubject= " + subject
-    			+ "\ndate = " + date
-    			+ "\nbody = " + body
-    			+ "}";
-    }
+	
+	public int getNo() {
+		return no;
+	}
+
+	@Override
+	public String toString() {
+		return "{\n" + "no = " + no + "\nfrom = " + from + "\nto = " + to + "\nsubject= " + subject + "\ndate = "
+				+ date + "\nbody = " + body + "\n}";
+	}
+	
+	
+	
 
 	@Override
 	public int compareTo(Email o) {
-//		this.date o.date
-		return 0;
+		return -(date.compareTo(o.date));
 	}
-    
-    
-	
+
+	public String getCc() {
+		// TODO Auto-generated method stub
+		return cc;
+	}
+
 }

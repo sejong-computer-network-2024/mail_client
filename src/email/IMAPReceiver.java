@@ -20,8 +20,7 @@ public class IMAPReceiver {
         Matcher matcher = pattern.matcher(fullMessage);
         
         while (matcher.find()) {
-            String emailStr = matcher.group(1).trim();
-            System.out.println(emailStr);
+            String emailStr = matcher.group(0).trim();
             emailStrList.add(emailStr);
         }
 		
@@ -62,12 +61,10 @@ public class IMAPReceiver {
         String fullMessage = sb.toString();
         System.out.println(fullMessage);
         
-//        System.out.println("------------------email 객체 출력-------------------");
         List<Email> emailList = new LinkedList<>();
         List<String> emailStrList = splitEmails(fullMessage);
         for(String emailStr : emailStrList) {
         	 Email email = new Email(emailStr);
-//        	 System.out.println(email);
              emailList.add(email);
         }
 
@@ -83,9 +80,54 @@ public class IMAPReceiver {
         
         return emailList;
     }
-    public static void fetchEmailDetail(String imapServer, int port, String username, String password) throws IOException { 
-    	
-    	return;
+    public static Email fetchEmailDetail(String imapServer, int port, String username, String password, int no) throws IOException { 
+    	Socket socket = new Socket(imapServer, port);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+        // 서버 응답 읽기
+        System.out.println("Response: " + reader.readLine());
+
+        // LOGIN 명령어로 로그인
+        writer.write("a001 LOGIN " + username + " " + password + "\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
+
+        // INBOX 열기
+        writer.write("a002 SELECT INBOX\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
+
+        // 메일 제목 읽기 요청 (가장 최근 10개만)
+        writer.write("a003 FETCH " + no + " (BODY[])");
+        writer.flush();
+
+        // 서버로부터 메일 제목을 읽고 출력
+        String response;
+        StringBuilder sb = new StringBuilder(10000);
+        //이슈 탈출 안됨 response가 뭔지 모르겠음.
+        while ((response = reader.readLine()) != null) {
+        	System.out.println(response);
+            if (response.equals("a003 OK FETCH completed")) break;
+            sb.append(response);
+            sb.append("\r\n");
+        }
+        String fullMessage = sb.toString();
+        System.out.println(fullMessage);
+        
+        Email email = new Email(fullMessage);
+
+        // 로그아웃
+        writer.write("a004 LOGOUT\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
+
+        // 리소스 해제
+        writer.close();
+        reader.close();
+        socket.close();
+        
+        return email;
     }
     
 
