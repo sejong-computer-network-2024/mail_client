@@ -16,11 +16,12 @@ public class IMAPReceiver {
 	private static List<String> splitEmails(String fullMessage) {
 		List<String> emailStrList = new LinkedList<String>();
 		
-		Pattern pattern = Pattern.compile("\\(BODY\\[] \\{\\d+\\}(.*?)\\)", Pattern.DOTALL);
+		Pattern pattern = Pattern.compile("\\* \\d+ FETCH \\(BODY\\[.*?\\] \\{\\d+\\}(.*?)\n\\)", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(fullMessage);
         
         while (matcher.find()) {
             String emailStr = matcher.group(1).trim();
+            System.out.println(emailStr);
             emailStrList.add(emailStr);
         }
 		
@@ -47,22 +48,26 @@ public class IMAPReceiver {
         System.out.println("Response: " + reader.readLine());
 
         // 메일 제목 읽기 요청 (가장 최근 10개만)
-        writer.write("a003 FETCH 1:10 BODY[HEADER.FIELDS (SUBJECT)]\r\n");
+        writer.write("a003 FETCH 1:* (BODY[HEADER.FIELDS (FROM SUBJECT DATE)])\r\n");
         writer.flush();
 
         // 서버로부터 메일 제목을 읽고 출력
         String response;
-        StringBuilder sb = new StringBuilder(3000);
+        StringBuilder sb = new StringBuilder(10000);
         while ((response = reader.readLine()) != null) {
             if (response.equals("a003 OK FETCH completed")) break;
             sb.append(response);
             sb.append("\r\n");
         }
         String fullMessage = sb.toString();
+        System.out.println(fullMessage);
+        
+//        System.out.println("------------------email 객체 출력-------------------");
         List<Email> emailList = new LinkedList<>();
         List<String> emailStrList = splitEmails(fullMessage);
         for(String emailStr : emailStrList) {
         	 Email email = new Email(emailStr);
+//        	 System.out.println(email);
              emailList.add(email);
         }
 

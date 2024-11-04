@@ -89,18 +89,10 @@ public class mailListPanel extends EmailClientPanel {
 		// 기존 데이터 지우기
 		tableModel.setRowCount(0);
 
-		// 새로운 메일 목록 데이터 추가 (임시 데이터 예시)
-//		Object[][] sampleData = { { "Alice", "Hello!", "2024-11-01 10:30" },
-//				{ "Bob", "Meeting update", "2024-11-01 09:15" },
-//				{ "Charlie", "Invoice attached", "2024-11-01 08:45" } };
-//
-//		for (Object[] row : sampleData) {
-//			tableModel.addRow(row);
-//		}
-		
 		if (emailList != null) {
 			for (Email email : emailList) {
-				tableModel.addRow(new String[] { email.getFrom(), email.getBody(), email.getDate() });
+				System.out.println(email);
+				tableModel.addRow(new String[] { email.getFrom(), email.getSubject(), email.getDate() });
 			}
 		}
 

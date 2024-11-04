@@ -1,12 +1,15 @@
 package email;
 
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Email {
+public class Email implements Comparable<Email>{
+	private int order;
 	private String subject;
 	private String from;
 	private String to;
+	private String cc;
 	private String date;
 	private String contentType;
 	private String body;
@@ -16,6 +19,7 @@ public class Email {
 	}
 	
 	private void parseRecievedIMAP(String receivedIMAP) {
+//		order = 
 		from = parseField(receivedIMAP, "From");
         to = parseField(receivedIMAP, "To");
         subject = parseField(receivedIMAP, "Subject");
@@ -26,6 +30,7 @@ public class Email {
 
         System.out.println("From: " + from);
         System.out.println("To: " + to);
+        System.out.println("Cc: " + cc);
         System.out.println("Subject: " + subject);
         System.out.println("Date: " + date);
         System.out.println("Content-Type: " + contentType);
@@ -62,6 +67,24 @@ public class Email {
 
 	public String getBody() {
 		return body;
+	}
+    
+    @Override
+    public String toString() {
+    	return "{"
+    			+ "order = " + order
+    			+ "\nfrom = " + from
+    			+ "\nto = "  + to
+    			+ "\nsubject= " + subject
+    			+ "\ndate = " + date
+    			+ "\nbody = " + body
+    			+ "}";
+    }
+
+	@Override
+	public int compareTo(Email o) {
+//		this.date o.date
+		return 0;
 	}
     
     

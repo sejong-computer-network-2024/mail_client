@@ -85,7 +85,7 @@ public class mailEditPanel extends EmailClientPanel {
 	            	EmailClientFrame frame = EmailClientFrame.getEmailClientFrame();
 	            	try {
 	            		SMTPSender.sendEmail(EmailClientFrame.SERVER, EmailClientFrame.SMTP_PORT, frame.getUserId(), frame.getUserPassword(),
-						        toField.getText(), subjectField.getText(), messageArea.getText());
+						        toField.getText(), ccField.getText(), subjectField.getText(), messageArea.getText());
 						System.out.println("Email sent successfully.");
 					} catch (IOException e1) {
 						e1.printStackTrace();
