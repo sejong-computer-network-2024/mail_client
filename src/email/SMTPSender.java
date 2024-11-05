@@ -25,52 +25,51 @@ public class SMTPSender {
 
 		List<String> rcptList = parseRcpt(toAddress, cc);
 		System.out.println(rcptList);
-		
+
 		// HELO 명령어 보내기
 		writer.write("HELO " + smtpServer + "\r\n");
 		writer.flush();
 		System.out.println("Response: " + reader.readLine());
-		
-		for (String rcpt : rcptList) {
+
 // 로그인 및 인증 생략
-//        // 인증 정보 전송 (AUTH LOGIN)
-//        writer.write("AUTH LOGIN\r\n");
-//        writer.flush();
-//        System.out.println("Response: " + reader.readLine());
-//
-//        // 사용자 이름과 비밀번호를 Base64로 인코딩하여 전송
-//        writer.write(Base64.getEncoder().encodeToString(username.getBytes()) + "\r\n");
-//        writer.flush();
-//        System.out.println("Response: " + reader.readLine());
-//
-//        writer.write(Base64.getEncoder().encodeToString(password.getBytes()) + "\r\n");
-//        writer.flush();
-//        System.out.println("Response: " + reader.readLine());
+        // 인증 정보 전송 (AUTH LOGIN)
+        writer.write("AUTH LOGIN\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
 
-			// 보내는 주소와 받는 주소 설정
+        // 사용자 이름과 비밀번호를 Base64로 인코딩하여 전송
+        writer.write(username + "\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
 
-			writer.write("MAIL FROM:<" + username + ">\r\n");
-			writer.flush();
-			System.out.println("Response: " + reader.readLine());
+        writer.write(password + "\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
 
+		// 보내는 주소와 받는 주소 설정
+
+		writer.write("MAIL FROM:<" + username + ">\r\n");
+		writer.flush();
+		System.out.println("Response: " + reader.readLine());
+		for (String rcpt : rcptList) {
 			writer.write("RCPT TO:<" + rcpt + ">\r\n");
 			writer.flush();
 			System.out.println("Response: " + reader.readLine());
-
-			// 메일 전송 시작 (DATA 명령)
-			writer.write("DATA\r\n");
-			writer.flush();
-			System.out.println("Response: " + reader.readLine());
-
-			// 메일 제목, 본문 작성 후 종료 (.을 포함하는 줄로 종료)
-			writer.write("Subject: " + subject + "\r\n");
-			writer.write("From: " + username + "\r\n");
-			writer.write("To: " + toAddress + "\r\n");
-			writer.write("Cc: " + cc + "\r\n");
-			writer.write("\r\n" + Base64.getEncoder().encodeToString(body.getBytes()) + "\r\n.\r\n");
-			writer.flush();
-			System.out.println("Response: " + reader.readLine());
 		}
+		// 메일 전송 시작 (DATA 명령)
+		writer.write("DATA\r\n");
+		writer.flush();
+		System.out.println("Response: " + reader.readLine());
+
+		// 메일 제목, 본문 작성 후 종료 (.을 포함하는 줄로 종료)
+		writer.write("Subject: " + subject + "\r\n");
+		writer.write("From: " + username + "\r\n");
+		writer.write("To: " + toAddress + "\r\n");
+		writer.write("Cc: " + cc + "\r\n");
+		writer.write("\r\n" + Base64.getEncoder().encodeToString(body.getBytes()) + "\r\n.\r\n");
+		writer.flush();
+		System.out.println("Response: " + reader.readLine());
+
 		// QUIT 명령으로 연결 종료
 		writer.write("QUIT\r\n");
 		writer.flush();

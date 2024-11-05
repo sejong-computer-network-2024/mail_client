@@ -28,7 +28,9 @@ public class Email implements Comparable<Email> {
 
 		from = parseField(receivedIMAP, "From");
 		to = parseField(receivedIMAP, "To");
+		cc = parseField(receivedIMAP, "Cc");
 		subject = parseField(receivedIMAP, "Subject");
+
 		String dateStr = parseField(receivedIMAP, "Date");
 		date = parseDate(dateStr);
 		contentType = parseField(receivedIMAP, "Content-Type");
@@ -58,7 +60,7 @@ public class Email implements Comparable<Email> {
 	}
 
 	private static String parseBody(String receivedIMAP) {
-		Pattern pattern = Pattern.compile("(?s)\n\n(.*)(?=\\)\n?$)");
+		Pattern pattern = Pattern.compile("(?s)\\r\\n\\r\\n(.*)(?=\\)\\n?$)");
 		Matcher matcher = pattern.matcher(receivedIMAP);
 
 		if (matcher.find()) {
@@ -66,20 +68,18 @@ public class Email implements Comparable<Email> {
 		}
 		return "";
 	}
-	
+
 	private static Date parseDate(String dateString) {
-        // 패턴에 요일 (EEE), 월 (MMM), 일 (dd), 시간 (HH:mm:ss), 시간대 (z), 연도 (yyyy) 포함
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-        
-        try {
-            return formatter.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-	
-	
+		// 패턴에 요일 (EEE), 월 (MMM), 일 (dd), 시간 (HH:mm:ss), 시간대 (z), 연도 (yyyy) 포함
+		SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+		System.out.println("===========날짜 문자열===========\n" + dateString);
+		try {
+			return formatter.parse(dateString);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return new Date((long) 0);
+	}
 
 	public String getSubject() {
 		return subject;
@@ -100,19 +100,16 @@ public class Email implements Comparable<Email> {
 	public String getBody() {
 		return body;
 	}
-	
+
 	public int getNo() {
 		return no;
 	}
 
 	@Override
 	public String toString() {
-		return "{\n" + "no = " + no + "\nfrom = " + from + "\nto = " + to + "\nsubject= " + subject + "\ndate = "
-				+ date + "\nbody = " + body + "\n}";
+		return "{\n" + "no = " + no + "\nfrom = " + from + "\nto = " + to + "\nsubject= " + subject + "\ndate = " + date
+				+ "\nbody = " + body + "\n}";
 	}
-	
-	
-	
 
 	@Override
 	public int compareTo(Email o) {

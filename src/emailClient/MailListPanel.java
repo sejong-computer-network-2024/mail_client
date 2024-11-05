@@ -133,7 +133,7 @@ public class MailListPanel extends EmailClientPanel {
 
 	private void moveToDetail(int no) {
 		EmailClientFrame frame = EmailClientFrame.getEmailClientFrame();
-//		((MailDetailPanel) frame.mailDetailPanel).init(no);
+		((MailDetailPanel) frame.mailDetailPanel).init(no);
 		frame.changePanel(frame.mailDetailPanel);
 	}
 

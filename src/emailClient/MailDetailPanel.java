@@ -83,7 +83,7 @@ public class MailDetailPanel extends EmailClientPanel {
             subjectLabel.setText(email.getSubject());
             fromLabel.setText(email.getFrom());
             toLabel.setText(email.getTo());
-            ccLabel.setText(email.getCc() != null ? email.getCc() : "없음");  // 참조가 없을 경우 "없음" 표시
+            ccLabel.setText(email.getCc() != "" ? email.getCc() : "없음");  // 참조가 없을 경우 "없음" 표시
             dateLabel.setText(email.getDate().toString());
             bodyTextArea.setText(email.getBody());
         }

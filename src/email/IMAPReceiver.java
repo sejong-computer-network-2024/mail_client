@@ -93,22 +93,16 @@ public class IMAPReceiver {
         writer.flush();
         System.out.println("Response: " + reader.readLine());
 
-        // INBOX 열기
-        writer.write("a002 SELECT INBOX\r\n");
-        writer.flush();
-        System.out.println("Response: " + reader.readLine());
 
-        // 메일 제목 읽기 요청 (가장 최근 10개만)
-        writer.write("a003 FETCH " + no + " (BODY[])");
+        writer.write("a002 FETCH " + no + " (BODY[])\r\n");
         writer.flush();
 
-        // 서버로부터 메일 제목을 읽고 출력
         String response;
         StringBuilder sb = new StringBuilder(10000);
         //이슈 탈출 안됨 response가 뭔지 모르겠음.
         while ((response = reader.readLine()) != null) {
         	System.out.println(response);
-            if (response.equals("a003 OK FETCH completed")) break;
+            if (response.equals("a002 OK FETCH completed")) break;
             sb.append(response);
             sb.append("\r\n");
         }
@@ -118,7 +112,7 @@ public class IMAPReceiver {
         Email email = new Email(fullMessage);
 
         // 로그아웃
-        writer.write("a004 LOGOUT\r\n");
+        writer.write("a003 LOGOUT\r\n");
         writer.flush();
         System.out.println("Response: " + reader.readLine());
 
@@ -130,18 +124,4 @@ public class IMAPReceiver {
         return email;
     }
     
-
-//    public static void main(String[] args) {
-//        String imapServer = "imap.example.com";
-//        int port = 143;  // 보통 포트 143 (보안 사용 안함)
-//        String username = "your_email@example.com";
-//        String password = "your_password";
-//
-//        try {
-//            fetchEmails(imapServer, port, username, password);
-//            System.out.println("Emails fetched successfully.");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 }
