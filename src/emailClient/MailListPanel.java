@@ -124,7 +124,6 @@ public class MailListPanel extends EmailClientPanel {
 		Collections.sort(emailList);
 		if (emailList != null) {
 			for (Email email : emailList) {
-				System.out.println(email);
 				tableModel.addRow(new String[] { String.valueOf(email.getNo()), email.getFrom(), email.getSubject(), email.getDate().toString() });
 			}
 		}

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -54,12 +55,12 @@ public class IMAPReceiver {
         String response;
         StringBuilder sb = new StringBuilder(10000);
         while ((response = reader.readLine()) != null) {
+        	System.out.println("Response: " + response);
             if (response.equals("a003 OK FETCH completed")) break;
             sb.append(response);
             sb.append("\r\n");
         }
         String fullMessage = sb.toString();
-        System.out.println(fullMessage);
         
         List<Email> emailList = new LinkedList<>();
         List<String> emailStrList = splitEmails(fullMessage);
@@ -107,7 +108,6 @@ public class IMAPReceiver {
             sb.append("\r\n");
         }
         String fullMessage = sb.toString();
-        System.out.println(fullMessage);
         
         Email email = new Email(fullMessage);
 
@@ -123,5 +123,35 @@ public class IMAPReceiver {
         
         return email;
     }
+
+	public static void deleteMail(String imapServer, int port, String username, String password, int no) throws IOException {
+		Socket socket = new Socket(imapServer, port);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+
+        // 서버 응답 읽기
+        System.out.println("Response: " + reader.readLine());
+
+        // LOGIN 명령어로 로그인
+        writer.write("a001 LOGIN " + username + " " + password + "\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
+
+        //메일 삭제
+        writer.write("a002 STORE " + no + " +FLAGS (\\Deleted)\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
+
+        // 로그아웃
+        writer.write("a003 LOGOUT\r\n");
+        writer.flush();
+        System.out.println("Response: " + reader.readLine());
+
+        // 리소스 해제
+        writer.close();
+        reader.close();
+        socket.close();
+		
+	}
     
 }

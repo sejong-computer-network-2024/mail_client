@@ -6,9 +6,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 //SMTP를 통한 이메일 전송
 public class SMTPSender {
@@ -24,7 +28,6 @@ public class SMTPSender {
 		System.out.println("Response: " + reader.readLine());
 
 		List<String> rcptList = parseRcpt(toAddress, cc);
-		System.out.println(rcptList);
 
 		// HELO 명령어 보내기
 		writer.write("HELO " + smtpServer + "\r\n");
@@ -33,18 +36,18 @@ public class SMTPSender {
 
 // 로그인 및 인증 생략
         // 인증 정보 전송 (AUTH LOGIN)
-        writer.write("AUTH LOGIN\r\n");
-        writer.flush();
-        System.out.println("Response: " + reader.readLine());
-
-        // 사용자 이름과 비밀번호를 Base64로 인코딩하여 전송
-        writer.write(username + "\r\n");
-        writer.flush();
-        System.out.println("Response: " + reader.readLine());
-
-        writer.write(password + "\r\n");
-        writer.flush();
-        System.out.println("Response: " + reader.readLine());
+//        writer.write("AUTH LOGIN\r\n");
+//        writer.flush();
+//        System.out.println("Response: " + reader.readLine());
+//
+//        // 사용자 이름과 비밀번호를 Base64로 인코딩하여 전송
+//        writer.write(username + "\r\n");
+//        writer.flush();
+//        System.out.println("Response: " + reader.readLine());
+//
+//        writer.write(password + "\r\n");
+//        writer.flush();
+//        System.out.println("Response: " + reader.readLine());
 
 		// 보내는 주소와 받는 주소 설정
 
@@ -66,7 +69,9 @@ public class SMTPSender {
 		writer.write("From: " + username + "\r\n");
 		writer.write("To: " + toAddress + "\r\n");
 		writer.write("Cc: " + cc + "\r\n");
-		writer.write("\r\n" + Base64.getEncoder().encodeToString(body.getBytes()) + "\r\n.\r\n");
+		SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
+		writer.write("Date: " + formatter.format(new Date()).toString() + "\r\n");
+		writer.write(body + "\r\n.\r\n");
 		writer.flush();
 		System.out.println("Response: " + reader.readLine());
 
@@ -84,11 +89,16 @@ public class SMTPSender {
 	private static List<String> parseRcpt(String to, String cc) {
 		List<String> rcptList = new LinkedList<>();
 		for (String toStr : to.split(",")) {
-			rcptList.add(toStr.trim());
+			toStr = toStr.trim();
+			if(!toStr.equals(""))
+				rcptList.add(toStr);
 		}
 		for (String toStr : cc.split(",")) {
-			rcptList.add(toStr.trim());
+			toStr = toStr.trim();
+			if(!toStr.equals(""))
+				rcptList.add(toStr);
 		}
 		return rcptList;
 	}
+	
 }

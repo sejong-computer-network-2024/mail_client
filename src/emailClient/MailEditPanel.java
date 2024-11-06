@@ -5,10 +5,13 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -26,7 +29,13 @@ public class MailEditPanel extends EmailClientPanel {
     private JTextArea messageArea;
     private JButton sendButton;
     private JButton backToListBtn;
-	
+    
+    private final static String PLAIN_TEXT_HEADER = "Content-Type: text/plain; charset=\"utf-8\"\r\n"
+    		+ "Content-Transfer-Encoding: base64\r\n\r\n";
+    
+    private final static String OUT_HEADER = "Content-Type: multipart/alternative;\r\n\r\n";
+    		
+    		
 	 public MailEditPanel() {
 	        setLayout(new BorderLayout());
 
@@ -85,11 +94,12 @@ public class MailEditPanel extends EmailClientPanel {
 	            	EmailClientFrame frame = EmailClientFrame.getEmailClientFrame();
 	            	try {
 	            		SMTPSender.sendEmail(EmailClientFrame.SERVER, EmailClientFrame.SMTP_PORT, frame.getUserId(), frame.getUserPassword(),
-						        toField.getText(), ccField.getText(), subjectField.getText(), messageArea.getText());
+						        toField.getText(), ccField.getText(), subjectField.getText(), encodeBody());
 						System.out.println("Email sent successfully.");
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					} finally {
+						frame.mailListPanel.init();
 						frame.changePanel(frame.mailListPanel);
 					}
 	            }
@@ -107,5 +117,43 @@ public class MailEditPanel extends EmailClientPanel {
 				}
 			});
 	        
+	    }
+	 private String encodeBody() throws IOException {
+		    String boundary = generateBoundary(); // Boundary 생성
+
+		    // MIME 멀티파트 헤더 설정
+		    StringBuilder emailBody = new StringBuilder();
+		    emailBody.append("MIME-Version: 1.0\r\n");
+		    emailBody.append("Content-Type: multipart/alternative; boundary=").append("\"" + boundary + "\"").append("\r\n\r\n");
+
+		    // PLAIN_TEXT_HEADER와 본문 추가
+		    emailBody.append("--").append(boundary).append("\r\n"); // Boundary 시작
+		    emailBody.append(PLAIN_TEXT_HEADER);
+		    String plainTextBody = Base64.getEncoder().encodeToString(messageArea.getText().getBytes());
+		    emailBody.append(plainTextBody).append("\r\n\r\n");
+
+//		    // 첨부 파일 파트 추가
+//		    if (attachmentFile != null && attachmentFile.exists()) {
+//		        emailBody.append("--").append(boundary).append("\r\n");
+//		        emailBody.append("Content-Type: application/octet-stream\r\n"); // 기본 MIME 타입 설정
+//		        emailBody.append("Content-Disposition: attachment; filename=\"").append(attachmentFile.getName()).append("\"\r\n");
+//		        emailBody.append("Content-Transfer-Encoding: base64\r\n\r\n");
+//		        
+//		        // 첨부 파일을 Base64로 인코딩
+//		        byte[] fileContent = Files.readAllBytes(attachmentFile.toPath());
+//		        String encodedFile = Base64.getEncoder().encodeToString(fileContent);
+//		        emailBody.append(encodedFile).append("\r\n");
+//		    }
+
+		    // 종료 Boundary
+		    emailBody.append("--").append(boundary).append("--").append("\r\n\r\n");
+
+		    return emailBody.toString();
+		}
+	 
+	 private static String generateBoundary() {
+	        byte[] randomBytes = new byte[16]; // 임의의 바이트 배열 크기 설정
+	        new SecureRandom().nextBytes(randomBytes);
+	        return "Boundary-" + Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
 	    }
 }
