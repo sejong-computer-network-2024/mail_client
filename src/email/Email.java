@@ -1,5 +1,6 @@
 package email;
 
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
@@ -38,14 +39,14 @@ public class Email implements Comparable<Email> {
 		date = parseDate(dateStr);
 
 		body = parseAndDecodeBody(receivedIMAP);
-		
+
 	}
 
 	private static int parseNo(String receivedIMAP) {
 		Pattern pattern = Pattern.compile("^\\* (\\d+) FETCH");
 		Matcher matcher = pattern.matcher(receivedIMAP);
 		int no = 0;
-		System.out.println(receivedIMAP);
+//		System.out.println(receivedIMAP);
 		// 숫자 추출
 		if (matcher.find()) {
 			no = Integer.parseInt(matcher.group(1)); // 캡처된 숫자
@@ -63,73 +64,61 @@ public class Email implements Comparable<Email> {
 	}
 
 	private static String parseAndDecodeBody(String receivedIMAP) {
- // Boundary 추출
-		
-//		Pattern mimePattern = Pattern.compile("[;\\s]{0,1}Content-Type:\\s[(multipart/mixed)(multipart/alternative)][^;]");
-//	    Matcher mimeMatcher = mimePattern.matcher(mimeMessage);
-//
-//	    if (!mimeMatcher.find()) {
-//	        System.out.println("Message is not MIME.");
-//	        return mimeMessage;
-//	    }
-	    Pattern boundaryPattern = Pattern.compile("boundary=\"([^\"]+)\"");
-	    Matcher boundaryMatcher = boundaryPattern.matcher(receivedIMAP);
-	    StringBuilder resultText = new StringBuilder();
+		System.out.println(receivedIMAP);
+		Pattern boundaryPattern = Pattern.compile("Content-Type: multipart/alternative;\\s*boundary=\"([^\"]+)\"");
+		Matcher boundaryMatcher = boundaryPattern.matcher(receivedIMAP);
+		StringBuilder resultText = new StringBuilder();
 
-	    if (!boundaryMatcher.find()) {
-	        System.out.println("Boundary not found.");
-	        return receivedIMAP;
-	    }
+		if (!boundaryMatcher.find()) {
+			Pattern bodyPattern = Pattern.compile("Content-Type: text/plain;.*?\\r?\\n\\r?\\n([A-Za-z0-9+/=\\s]+)",
+					Pattern.DOTALL);
+			Matcher bodyMatcher = bodyPattern.matcher(receivedIMAP);
 
-	    String boundary = boundaryMatcher.group(1);
-	    String[] parts = receivedIMAP.split("--" + boundary);
+			if (bodyMatcher.find()) {
+				String body = bodyMatcher.group(1).trim();
 
-//	    int attachmentCount = 0;
+				String base64Content = body.replaceAll("\\s", "");
 
-	    for (String part : parts) {
-	    	
-	        // Content-Type 추출
-	        Pattern contentTypePattern = Pattern.compile("Content-Type: ([^;]+)");
-	        Matcher contentTypeMatcher = contentTypePattern.matcher(part);
-	        String contentType = contentTypeMatcher.find() ? contentTypeMatcher.group(1).trim() : "";
+				try {
+					byte[] decodedBytes = Base64.getDecoder().decode(base64Content);
+					String plainText = new String(decodedBytes, StandardCharsets.UTF_8); // UTF-8 인코딩 지정
+					resultText.append(plainText).append("\n");
+				} catch (IllegalArgumentException e) {
+					System.err.println("Base64 디코딩 오류 발생: " + e.getMessage());
+				}
+			}
 
-	        // Base64로 인코딩된 컨텐츠 추출
-	        Pattern contentPattern = Pattern.compile("Content-Transfer-Encoding: base64\\s+([A-Za-z0-9+/=\\s]+)");
-	        Matcher contentMatcher = contentPattern.matcher(part);
+			return resultText.toString();
+		}
 
-	        if (contentMatcher.find()) {
-	            String base64Content = contentMatcher.group(1).replaceAll("\\s", ""); // 줄바꿈 제거
-	            byte[] decodedBytes = Base64.getDecoder().decode(base64Content);
+		String boundary = boundaryMatcher.group(1);
+		String[] parts = receivedIMAP.split("--" + boundary);
 
-	            if (contentType.equals("text/plain")) {
-	                // 텍스트 본문을 디코딩하여 추가
-	                String plainText = new String(decodedBytes);
-	                System.out.println("Decoded Text (" + contentType + "): " + plainText);
-	                resultText.append(plainText).append("\n");
-	            } 
-//	            else {
-//	                // 첨부 파일 처리
-//	                Pattern filenamePattern = Pattern.compile("filename=\"([^\"]+)\"");
-//	                Matcher filenameMatcher = filenamePattern.matcher(part);
-//	                String fileName = filenameMatcher.find() ? filenameMatcher.group(1) : "attachment_" + (++attachmentCount);
-//	                fileName = Email.decodeBase64stringToUtf8(fileName);
-//	                System.out.println("파일 이름 : " + fileName);
-//
-//	                // 파일로 저장
-//	                try (FileOutputStream fos = new FileOutputStream(fileName)) {
-//	                    fos.write(decodedBytes);
-//	                } catch (FileNotFoundException e) {
-//	                    e.printStackTrace();
-//	                } catch (IOException e) {
-//	                    e.printStackTrace();
-//	                }
-//	                System.out.println("Attachment saved as: " + fileName);
-//	            }
-	        }
-	    }
-	    return resultText.toString();
+		for (String part : parts) {
+
+			// Content-Type 추출
+			Pattern contentTypePattern = Pattern.compile("Content-Type: ([^;]+)");
+			Matcher contentTypeMatcher = contentTypePattern.matcher(part);
+			String contentType = contentTypeMatcher.find() ? contentTypeMatcher.group(1).trim() : "";
+
+			// Base64로 인코딩된 컨텐츠 추출
+			Pattern contentPattern = Pattern.compile("Content-Transfer-Encoding: base64\\s+([A-Za-z0-9+/=\\s]+)");
+			Matcher contentMatcher = contentPattern.matcher(part);
+
+			if (contentMatcher.find()) {
+				String base64Content = contentMatcher.group(1).replaceAll("\\s", ""); // 줄바꿈 제거
+				byte[] decodedBytes = Base64.getDecoder().decode(base64Content);
+
+				if (contentType.equals("text/plain")) {
+					// 텍스트 본문을 디코딩하여 추가
+					String plainText = new String(decodedBytes, StandardCharsets.UTF_8);
+					resultText.append(plainText).append("\n");
+				}
+			}
+
+		}
+		return resultText.toString();
 	}
-
 
 	private static Date parseDate(String dateString) {
 		// 패턴에 요일 (EEE), 월 (MMM), 일 (dd), 시간 (HH:mm:ss), 시간대 (z), 연도 (yyyy) 포함
@@ -141,26 +130,25 @@ public class Email implements Comparable<Email> {
 		}
 		return new Date((long) 0);
 	}
-	
+
 	public static String decodeBase64stringToUtf8(String text) {
-        Pattern pattern = Pattern.compile("=\\?utf-8\\?B\\?([A-Za-z0-9+/=]+)\\?=", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(text);
+		Pattern pattern = Pattern.compile("=\\?utf-8\\?B\\?([A-Za-z0-9+/=]+)\\?=", Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(text);
 
-        StringBuffer decodedText = new StringBuffer();
+		StringBuffer decodedText = new StringBuffer();
 
-        // 패턴에 맞는 부분을 찾아 디코딩
-        while (matcher.find()) {
-            String base64String = matcher.group(1);
-            byte[] decodedBytes = Base64.getDecoder().decode(base64String);
-            String decodedSegment = new String(decodedBytes);
-            matcher.appendReplacement(decodedText, decodedSegment);
-        }
-        
-        matcher.appendTail(decodedText);
-        return decodedText.toString();
-    }
-	
-	
+		// 패턴에 맞는 부분을 찾아 디코딩
+		while (matcher.find()) {
+			String base64String = matcher.group(1);
+			byte[] decodedBytes = Base64.getDecoder().decode(base64String);
+			String decodedSegment = new String(decodedBytes);
+			matcher.appendReplacement(decodedText, decodedSegment);
+		}
+
+		matcher.appendTail(decodedText);
+		return decodedText.toString();
+	}
+
 	public String getSubject() {
 		return subject;
 	}
@@ -187,8 +175,8 @@ public class Email implements Comparable<Email> {
 
 	@Override
 	public String toString() {
-		return "{\n" + "no = " + no + "\nfrom = " + from + "\nto = " + to + "\ncc = " + cc + "\nsubject= " + subject + "\ndate = " + date
-				+ "\nbody = " + body + "\n}";
+		return "{\n" + "no = " + no + "\nfrom = " + from + "\nto = " + to + "\ncc = " + cc + "\nsubject= " + subject
+				+ "\ndate = " + date + "\nbody = " + body + "\n}";
 	}
 
 	@Override
@@ -197,7 +185,6 @@ public class Email implements Comparable<Email> {
 	}
 
 	public String getCc() {
-		// TODO Auto-generated method stub
 		return cc;
 	}
 

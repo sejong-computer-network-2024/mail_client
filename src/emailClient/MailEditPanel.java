@@ -72,7 +72,6 @@ public class MailEditPanel extends EmailClientPanel {
 	        subjectField = new JTextField(30);
 	        topPanel.add(subjectField, gbc);
 
-	        // 메인 패널에 상단 패널 추가
 	        add(topPanel, BorderLayout.NORTH);
 
 	        // 내용 작성 영역
@@ -80,14 +79,13 @@ public class MailEditPanel extends EmailClientPanel {
 	        JScrollPane messageScrollPane = new JScrollPane(messageArea);
 	        add(messageScrollPane, BorderLayout.CENTER);
 
-	        // 하단 패널: 전송 버튼
+	        // 하단 패널(전송 버튼, 메일 목록 버튼)
 	        JPanel bottomPanel = new JPanel();
 	        bottomPanel.setLayout(new GridLayout());
 	        
 	        sendButton = new JButton("Send");
 	        bottomPanel.add(sendButton);
 	        add(bottomPanel, BorderLayout.SOUTH);
-	        // 전송 버튼 이벤트 처리
 	        sendButton.addActionListener(new ActionListener() {
 	            @Override
 	            public void actionPerformed(ActionEvent e) {
@@ -132,26 +130,13 @@ public class MailEditPanel extends EmailClientPanel {
 		    String plainTextBody = Base64.getEncoder().encodeToString(messageArea.getText().getBytes());
 		    emailBody.append(plainTextBody).append("\r\n\r\n");
 
-//		    // 첨부 파일 파트 추가
-//		    if (attachmentFile != null && attachmentFile.exists()) {
-//		        emailBody.append("--").append(boundary).append("\r\n");
-//		        emailBody.append("Content-Type: application/octet-stream\r\n"); // 기본 MIME 타입 설정
-//		        emailBody.append("Content-Disposition: attachment; filename=\"").append(attachmentFile.getName()).append("\"\r\n");
-//		        emailBody.append("Content-Transfer-Encoding: base64\r\n\r\n");
-//		        
-//		        // 첨부 파일을 Base64로 인코딩
-//		        byte[] fileContent = Files.readAllBytes(attachmentFile.toPath());
-//		        String encodedFile = Base64.getEncoder().encodeToString(fileContent);
-//		        emailBody.append(encodedFile).append("\r\n");
-//		    }
-
 		    // 종료 Boundary
 		    emailBody.append("--").append(boundary).append("--").append("\r\n\r\n");
 
 		    return emailBody.toString();
 		}
 	 
-	 private static String generateBoundary() {
+	 private static String generateBoundary() {	//바운더리 생성 함수
 	        byte[] randomBytes = new byte[16]; // 임의의 바이트 배열 크기 설정
 	        new SecureRandom().nextBytes(randomBytes);
 	        return "Boundary-" + Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);

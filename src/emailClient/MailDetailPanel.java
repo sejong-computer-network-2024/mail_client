@@ -23,7 +23,6 @@ import email.IMAPReceiver;
 public class MailDetailPanel extends EmailClientPanel {
 	private Email email;
 
-	// UI 컴포넌트들 선언
 	private JLabel subjectLabel;
 	private JLabel fromLabel;
 	private JLabel toLabel;
@@ -37,11 +36,10 @@ public class MailDetailPanel extends EmailClientPanel {
 	public MailDetailPanel() {
 		setLayout(new BorderLayout());
 
-		// 상단 정보 패널 (제목, 보낸 사람, 받는 사람 등)
+		// 상단 정보 패널 (제목, 보낸 사람, 받는 사람, 참조 등)
 		JPanel infoPanel = new JPanel();
 		infoPanel.setLayout(new GridLayout(5, 1)); // 5개의 행을 가진 그리드 레이아웃
 
-		// 레이블 초기화 및 추가
 		subjectLabel = new JLabel();
 		fromLabel = new JLabel();
 		toLabel = new JLabel();
@@ -102,7 +100,7 @@ public class MailDetailPanel extends EmailClientPanel {
 		bottomPanel.add(deleteBtn);
 	}
 
-	// 특정 이메일의 상세 내용을 로드하고 UI 업데이트
+	// 해당 번호의 이메일 상세 내용을 로드
 	public void init(int no) {
 		EmailClientFrame frame = EmailClientFrame.getEmailClientFrame();
 		try {
@@ -124,11 +122,6 @@ public class MailDetailPanel extends EmailClientPanel {
 		}
 
 		System.out.println(email);
-	}
-
-	@Override
-	public void init() {
-		// init(int no) 호출 전 초기화가 필요한 경우 구현
 	}
 
 }
