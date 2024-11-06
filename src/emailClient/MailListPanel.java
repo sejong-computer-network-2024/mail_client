@@ -24,7 +24,6 @@ import email.IMAPReceiver;
 public class MailListPanel extends EmailClientPanel {
 	private JButton newMailBtn;
 	private JButton refreshBtn;
-	private JTextField searchField;
 	private JTable mailTable;
 	private DefaultTableModel tableModel;
 	
@@ -38,12 +37,9 @@ public class MailListPanel extends EmailClientPanel {
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		newMailBtn = new JButton("메일 쓰기");
 		refreshBtn = new JButton("새로 고침");
-		searchField = new JTextField(15);
-		searchField.setToolTipText("메일 검색");
 
 		topPanel.add(newMailBtn);
 		topPanel.add(refreshBtn);
-		topPanel.add(searchField);
 		add(topPanel, BorderLayout.NORTH);
 
 		// 메일 목록 테이블 설정
